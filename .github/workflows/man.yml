@@ -1,25 +1,47 @@
-name: Build and deploy to GitHub Pages
+image: alombarte/hugo
 
-on:
-  push:
-    branches:
-      - master
-      
+stages:
+  - build
+  - deploy
+services:
+  - docker:dind
 
-jobs:
-  build-deploy:
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v1
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
-        with:
-          hugo-version: '0.73.0'
-      - name: Build
-        run: hugo --minify
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v2
-        env:
-          PERSONAL_TOKEN: ${{ secret.GITHUB_TOKEN }}
-          PUBLISH_BRANCH: master
-          PUBLISH_DIR: public
+# If you need special NPM builds that cannot be handled through Hugo:
+build:
+  stage: build
+  image: docker:stable
+  script:
+    - docker run -v $PWD:/app -w /app node:10 npm install
+    - docker run -v $PWD:/app -w /app node:10 npm run-script build
+  artifacts:
+    paths:
+    - static/dist/
+  only:
+    - master
+
+deploy:
+  stage: deploy
+# variables:
+#    GIT_SUBMODULE_STRATEGY: normal
+#    GIT_DEPTH: "3"
+  dependencies:
+    - build
+  script:
+    - git clone https://github.com/${USERNAME}/${REPOSITORY}.git public
+    - rm -fr public/*
+    - hugo -d public
+    - cd public
+    - git remote rm origin
+    - git remote add origin https://${USERNAME}:${GH_TOKEN}@github.com/${USERNAME}/${REPOSITORY}.net.git
+    - git config --global user.email "${EMAIL}"
+    - git config --global user.name "${USERNAME}"
+    - git add -A
+    - git commit -m "Automatic build from CI $CI_SERVER_NAME $CI_PIPELINE_ID"
+    - git push --set-upstream origin master
+  artifacts:
+    paths:
+    - public
+  only:
+    - master
+  before_script:
+    - hugo version

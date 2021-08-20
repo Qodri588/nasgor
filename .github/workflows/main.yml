@@ -4,16 +4,5 @@ on:
     branches:
       - master
 
-jobs:
-  build:
-    name: Deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout master
-        uses: actions/checkout@v1
-
-      - name: Deploy the site
-        uses: spankie/hugo-deploy-to-zeit@master
-        env:
-          HUGO_VERSION: 0.59.1
-          ZEIT_TOKEN: ${{ secrets.ZEIT_TOKEN }}
+- name: Hugo blog building
+  uses: Skarlso/blog-builder@v0.0.6

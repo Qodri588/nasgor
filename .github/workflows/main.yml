@@ -1,5 +1,4 @@
-name: Build Site
-
+name: Build with hugo and deploy to zeit
 on:
   push:
     branches:
@@ -7,21 +6,14 @@ on:
 
 jobs:
   build:
+    name: Deploy
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@master
-        with:
-          submodules: true
-      - name: Build Site
-        uses: chabad360/hugo-actions@master
-- name: Publish Site
-  uses: chabad360/hugo-actions@master
-  with:
-    buildPath: 'public'
-    # Use if you have a need to build the site to another directory
-    hugoVersion: 'extended_0.58.3'
-    # Use if your site requires a specific version of Hugo
-    # Append "extended_" to the begining to use Hugo Extended
-    args: --gc --minify
+      - name: Checkout master
+        uses: actions/checkout@v1
+
+      - name: Deploy the site
+        uses: spankie/hugo-deploy-to-zeit@master
+        env:
+          HUGO_VERSION: 0.59.1
+          ZEIT_TOKEN: ${{ secrets.ZEIT_TOKEN }}

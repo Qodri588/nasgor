@@ -1,21 +1,32 @@
-name: github pages
+name: Build GH-Pages
 
 on:
   push:
+    paths-ignore:
+      - 'images/**'
+      - 'LICENSE'
+      - 'README.md'
     branches:
-    - master
+      - master
+      - exampleSite
+  workflow_dispatch:
+    # manual run
 
 jobs:
-  build-deploy:
-    runs-on: ubuntu-18.04
+  deploy:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-      with:
-        submodules: true
-    - name: build
-      uses: mattbailey/actions-hugo@v0.57.2
-      if: github.event.deleted == false
-      with:
-        args: --gc --minify
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+
+      - name: Build
+        run: hugo --buildDrafts --gc --verbose --minify
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB.TOKEN }}
+          publish_dir: ./public

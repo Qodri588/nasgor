@@ -1,6 +1,4 @@
-# .github/workflows/build.yml
-
-name: build
+name: github pages
 
 on:
   push:
@@ -8,14 +6,16 @@ on:
     - master
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  build-deploy:
+    runs-on: ubuntu-18.04
     steps:
-    - name: 'Building...'
-      uses: reuixiy/hugo-deploy@v1
+    - uses: actions/checkout@master
+      with:
+        submodules: true
+    - name: build
+      uses: mattbailey/actions-hugo@v0.57.2
+      if: github.event.deleted == false
+      with:
+        args: --gc --minify
       env:
-        DEPLOY_REPO: username/username.github.io
-        DEPLOY_BRANCH: build
-        DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
-       
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

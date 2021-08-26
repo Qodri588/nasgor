@@ -22,3 +22,4 @@ jobs:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_BRANCH: master
           destination_dir: netlify
+          PUBLISH_DIR: ./public
